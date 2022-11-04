@@ -40,7 +40,11 @@ public class KotlinConventions {
 		kotlinOptions.setJvmTarget("17");
 		kotlinOptions.setAllWarningsAsErrors(true);
 		List<String> freeCompilerArgs = new ArrayList<>(compile.getKotlinOptions().getFreeCompilerArgs());
-		freeCompilerArgs.addAll(List.of("-Xsuppress-version-warnings", "-Xjsr305=strict", "-opt-in=kotlin.RequiresOptIn"));
+		List<String> listtemp = new ArrayList<>();
+		listtemp.add("-Xsuppress-version-warnings");
+		listtemp.add( "-Xjsr305=strict");
+		listtemp.add("-opt-in=kotlin.RequiresOptIn");
+		freeCompilerArgs.addAll(listtemp);
 		compile.getKotlinOptions().setFreeCompilerArgs(freeCompilerArgs);
 	}
 
