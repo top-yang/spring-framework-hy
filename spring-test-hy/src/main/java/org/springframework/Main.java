@@ -1,0 +1,13 @@
+package org.springframework;
+
+import org.springframework.context.ConfigurableApplicationContext;
+
+public class Main {
+	public static void main(String[] args) {
+
+
+
+
+		System.out.println("Hello world!");
+	}
+}
