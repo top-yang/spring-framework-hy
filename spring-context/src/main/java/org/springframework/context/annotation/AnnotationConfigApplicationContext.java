@@ -55,6 +55,16 @@ import org.springframework.util.Assert;
  */
 public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
 
+	/*
+	BeanDefinitionReader
+	作用是读取 Spring 配置文件中的内容，将其转换为 IoC 容器内部的数据结构：BeanDefinition。
+	在上一章节关于 BeanDefinition 的学习中有提到 XmlBeanDefinitionReader，该类是 BeanDefinitionReader 的一个重要实现。
+	本文主要对 BeanDefinitionReader 体系中的关键方法进行解读。
+
+
+
+
+	 */
 	private final AnnotatedBeanDefinitionReader reader;
 
 	private final ClassPathBeanDefinitionScanner scanner;
@@ -66,8 +76,27 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext() {
 		StartupStep createAnnotatedBeanDefReader = this.getApplicationStartup().start("spring.context.annotated-bean-reader.create");
+		logger.info(this.getClass().getSimpleName()+"创建AnnotatedBeanDefinitionReader");
+		/**
+		 * 创建一个读取注解的Bean定义读取器
+		 * 什么是bean定义？BeanDefinition
+		 *
+		 * 完成了spring内部BeanDefinition的注册（主要是后置处理器，包括Bean后置处理器和BeanFactory后置处理器）
+		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		createAnnotatedBeanDefReader.end();
+		logger.info(this.getClass().getSimpleName()+"创建ClassPathBeanDefinitionScanner");
+		/**
+		 * 创建BeanDefinition扫描器
+		 * 可以用来扫描包或者类，继而转换为bd
+		 *
+		 * spring默认的扫描器其实不是这个scanner对象
+		 * 而是在后面自己又重新new了一个ClassPathBeanDefinitionScanner
+		 * spring在执行工程后置处理器ConfigurationClassPostProcessor时，去扫描包时会new一个ClassPathBeanDefinitionScanner
+		 *
+		 * 这里的scanner仅仅是为了程序员可以手动调用AnnotationConfigApplicationContext对象的scan方法
+		 *
+		 */
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -89,7 +118,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		this();
-		register(componentClasses);
+		logger.info("创建容器-->解析BeanDefinition-->刷新容器");
+		register(componentClasses);//注册configBeanDefinition
 		refresh();
 	}
 

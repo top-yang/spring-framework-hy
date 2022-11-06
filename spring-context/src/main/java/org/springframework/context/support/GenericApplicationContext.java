@@ -136,6 +136,7 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 	 * @see #refresh
 	 */
 	public GenericApplicationContext() {
+		logger.info(this.getClass().getSimpleName()+"创建beanFactory");
 		this.beanFactory = new DefaultListableBeanFactory();
 	}
 
