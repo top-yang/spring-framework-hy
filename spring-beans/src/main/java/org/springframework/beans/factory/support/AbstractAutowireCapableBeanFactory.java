@@ -502,9 +502,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			//resolveBeforeInstantiation方法是调用BeanPostProcessor处理器
 			//SpringBean的创建还可以通过实现了InstantiationAwarePostProcessor接口的类，并结合动态代理去实现创建所需要的动态代理对象.
+			//提供给了aop机会，但aop实际是在目标对象初始化完成后再通过BeanPostProcessor的初始化后处理创建的代理对象
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
-			if (bean != null) {//aop基于此处判断
+			if (bean != null) {
 				return bean;
 			}
 		}
@@ -605,6 +606,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			populateBean(beanName, mbd, instanceWrapper);
 			//instanceof aware接口，setBeanName setBeanClassLoader setBeanFactory,调用afterPropertiesSet()
 			//调用Bean后置管理器后置方法BeanPostProcessor.postProcessAfterInitialization
+			logger.info("aop在此创建代理对象");
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {

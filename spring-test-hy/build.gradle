@@ -16,6 +16,8 @@ dependencies {
     api(project(":spring-web"))//当前版本不支持compile方法
     api(project(":spring-webmvc"))//当前版本不支持compile方法
     api(project(":spring-context"))//当前版本不支持compile方法
+    api(project(":spring-aop"))
+    api("org.aspectj:aspectjweaver:1.9.7")
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 

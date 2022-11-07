@@ -596,7 +596,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				d 实现MergedBeanDefinitionPostProcessor接口的
 				 */
-				registerBeanPostProcessors(beanFactory);//真正的调用是在
+				registerBeanPostProcessors(beanFactory);//真正的调用是在bean实例化
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
