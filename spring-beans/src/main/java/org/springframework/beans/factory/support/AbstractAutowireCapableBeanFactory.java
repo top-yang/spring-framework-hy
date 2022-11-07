@@ -500,7 +500,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			//resolveBeforeInstantiation方法是调用BeanPostProcessor处理器
+			//resolveBeforeInstantiation方法是调用BeanPostProcessor处理器的postProcessBeforeInstantiation
+			//这里返回的对象若不为 null 会替换掉原本的 bean，并且仅会走 postProcessAfterInitialization 流程
 			//SpringBean的创建还可以通过实现了InstantiationAwarePostProcessor接口的类，并结合动态代理去实现创建所需要的动态代理对象.
 			//提供给了aop机会，但aop实际是在目标对象初始化完成后再通过BeanPostProcessor的初始化后处理创建的代理对象
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
@@ -591,9 +592,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			//为避免后期循环依赖，可以在bean初始化完成前将创建实例的objectFac加入工厂
-			//getEarlyBeanReference 对bean再一次依赖引用，主要应用SmartInstantiationAware BeanPostProcessor
-			//AOP在此将advice动态织入bean
+			//为避免后期循环依赖，可以在bean初始化完成前将创建实例的objectFactory加入三级缓存,循环依赖法生时，调用objectFactory的getObject生成bean
+			//若有bf增强，相关逻辑在此时加入对象工厂，放入三级缓存。
+			System.out.println("提前暴露"+beanName+"，将objectFactory放入三级工厂");
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -619,14 +620,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		//检查当前bean初始化完成后所依赖的bean是否初始化完成
 		if (earlySingletonExposure) {
+			//get二级缓存的bean
 			Object earlySingletonReference = getSingleton(beanName, false);
-			//earlySingletonReference只有在检测到有循环依赖的情况下才会不为空
+			//earlySingletonReference只有在检测到有循环依赖的情况下才会不为空，发生循环依赖时，会将三级创建的bean保存到二级
 			if (earlySingletonReference != null) {
-				//exposedObejct在前面的依赖注入和初始化过程中没有改变，也就是没有被增强
+				//exposedObejct在前面的依赖注入和初始化过程中没有改变，也就是没有被增强,没有被代理
 				if (exposedObject == bean) {
-					exposedObject = earlySingletonReference;
+					exposedObject = earlySingletonReference;//有循环依赖，且没有被增强，返回二级缓存的bean
 				}
-				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
+				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {//当前bean被代理，而且有
 					String[] dependentBeans = getDependentBeans(beanName);
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
 					for (String dependentBean : dependentBeans) {
@@ -968,10 +970,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
+				//如果需要代理，这里会返回代理对象，否则返回原始对象
 				exposedObject = bp.getEarlyBeanReference(exposedObject, beanName);
 			}
 		}
-		System.out.println("三级缓存处理完，返回bean");
+		System.out.println("三级缓存检查是否代理完，保存bean");
 		return exposedObject;
 	}
 
@@ -1441,7 +1444,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
 				//这里调用AutowiredAnnotationBeanPostProcessor.postProcessProperties()
 				//完成注解自动注入（DI）
-				logger.info("@autowire进行依赖注入");
+				logger.info("@autowire进行依赖注入");//循环依赖在这里getbean
 				PropertyValues pvsToUse = bp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 				if (pvsToUse == null) {
 					return;

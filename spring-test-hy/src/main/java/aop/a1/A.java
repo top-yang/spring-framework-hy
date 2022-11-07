@@ -1,5 +1,6 @@
 package aop.a1;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,6 +12,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class A implements Xxable{
+
+	@Autowired
+	B b;
+
 	@Override
 	public void xx() {
 		System.out.println("this is a xx");
