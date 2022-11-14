@@ -49,6 +49,7 @@ public abstract class StaticMethodMatcherPointcut extends StaticMethodMatcher im
 	}
 
 
+	//获取的MethodMather返回自己
 	@Override
 	public final MethodMatcher getMethodMatcher() {
 		return this;

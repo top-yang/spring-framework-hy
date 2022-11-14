@@ -98,21 +98,26 @@ public abstract class AbstractFallbackTransactionAttributeSource
 	 * @param targetClass the target class for this invocation (may be {@code null})
 	 * @return a TransactionAttribute for this method, or {@code null} if the method
 	 * is not transactional
+	 * aop @Transactional的匹配方法
+	 *
+	 *
 	 */
 	@Override
 	@Nullable
 	public TransactionAttribute getTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
 		if (method.getDeclaringClass() == Object.class) {
+			//object的方法直接返回空
 			return null;
 		}
 
-		// First, see if we have a cached value.
+		// First, see if we have a cached value.缓存机制
 		Object cacheKey = getCacheKey(method, targetClass);
 		TransactionAttribute cached = this.attributeCache.get(cacheKey);
 		if (cached != null) {
 			// Value will either be canonical value indicating there is no transaction attribute,
 			// or an actual transaction attribute.
 			if (cached == NULL_TRANSACTION_ATTRIBUTE) {
+				//缓存的是没有事务属性的单例，返回null
 				return null;
 			}
 			else {
@@ -120,13 +125,15 @@ public abstract class AbstractFallbackTransactionAttributeSource
 			}
 		}
 		else {
-			// We need to work it out.
+			//根据@Transactional注解生成事务属性
 			TransactionAttribute txAttr = computeTransactionAttribute(method, targetClass);
 			// Put it in the cache.
 			if (txAttr == null) {
 				this.attributeCache.put(cacheKey, NULL_TRANSACTION_ATTRIBUTE);
 			}
 			else {
+				//设置事务的描述，后续作为事务的名字
+				//transactionName = desciptor = method.getDeclaringClass().getName() + "." + method.getName()　　
 				String methodIdentification = ClassUtils.getQualifiedMethodName(method, targetClass);
 				if (txAttr instanceof DefaultTransactionAttribute dta) {
 					dta.setDescriptor(methodIdentification);
@@ -160,36 +167,54 @@ public abstract class AbstractFallbackTransactionAttributeSource
 	 * @since 4.1.8
 	 * @see #getTransactionAttribute
 	 */
+	/*
+	 * 由于代理类的存在，所以需要先找到具体被@Transaction注解的method（targetClass、superClass甚至interface上），然后解析@Transaction生成TransactionDefinition
+	 * @Transactional注解的优先级：当同时注解方法和类时，方法 > 类
+	 */
 	@Nullable
 	protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
 		// Don't allow non-public methods, as configured.
+		//默认publicMethodsOnly == true，所以如果方法不是public修饰的，返回null
 		if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {
 			return null;
 		}
-
-		// The method may be on an interface, but we need attributes from the target class.
-		// If the target class is null, the method will be unchanged.
+		//获取最具体的方法，比如被重写的方法、接口类的实现方法、桥接方法
+		//targetClass == null
+		// 	specificMethod = method
+		//targetClass != null
+		// 	方法在targetClass声明或重写,
+		// 		Jdk动态代理 specificMethod = method，CgLib动态代理specificMethod = superClass.method
+		// 	方法在不在targetClass中声明且重写,
+		// 		public方法，specificMethod = method
+		// 		非public方法，specificMethod = superClass.method或者接口中的method
 		Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
 
 		// First try is the method in the target class.
+		//先解析方法
+		//如果方法被@Transactional注解，解析方法上的@Transactional生成事务属性实例
 		TransactionAttribute txAttr = findTransactionAttribute(specificMethod);
 		if (txAttr != null) {
 			return txAttr;
 		}
 
+		// 如果方法上没有@Transaction注解，
+		// 解析方法的声明类（可能是targetClass，superClass，甚至interface）上的@Transaction生成事务属性实例
 		// Second try is the transaction attribute on the target class.
 		txAttr = findTransactionAttribute(specificMethod.getDeclaringClass());
 		if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
 			return txAttr;
 		}
 
+		//如果上面txAttr都为空，
 		if (specificMethod != method) {
 			// Fallback is to look at the original method.
+			// 代理实例的method方法上的@Transactional注解,AspectJ  以当前方法为例
 			txAttr = findTransactionAttribute(method);
 			if (txAttr != null) {
 				return txAttr;
 			}
 			// Last fallback is the class of the original method.
+			// 代理方法的Class类上的@Transactional注解,AspectJ    当前类
 			txAttr = findTransactionAttribute(method.getDeclaringClass());
 			if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
 				return txAttr;

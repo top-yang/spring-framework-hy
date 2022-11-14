@@ -89,6 +89,13 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	 * with proxy-based AOP), or protected/private methods as well
 	 * (typically used with AspectJ class weaving)
 	 */
+	/*
+	//annotationParsers初始化 注解解析器初始化
+    //annotationParsers.add(new SpringTransactionAnnotationParser())
+    //系统支持jta12时annotationParsers.add(new SJtaTransactionAnnotationParser())
+    //系统支持ejb3时this.annotationParsers.add(new Ejb3TransactionAnnotationParser());
+
+	 */
 	public AnnotationTransactionAttributeSource(boolean publicMethodsOnly) {
 		this.publicMethodsOnly = publicMethodsOnly;
 		if (jta12Present || ejb3Present) {
@@ -140,6 +147,8 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	@Override
 	public boolean isCandidateClass(Class<?> targetClass) {
 		for (TransactionAnnotationParser parser : this.annotationParsers) {
+			//默认的SpringTransactionAnnotationParse.isCandidateClass
+			//判断类中包含@Transactional注解，
 			if (parser.isCandidateClass(targetClass)) {
 				return true;
 			}
@@ -172,6 +181,7 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	@Nullable
 	protected TransactionAttribute determineTransactionAttribute(AnnotatedElement element) {
 		for (TransactionAnnotationParser parser : this.annotationParsers) {
+			//解析注解生成
 			TransactionAttribute attr = parser.parseTransactionAnnotation(element);
 			if (attr != null) {
 				return attr;

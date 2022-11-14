@@ -32,10 +32,18 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Juergen Hoeller
  * @since 2.5.5
+ *
+ * 本类是一个抽象类,抽象类被new时，生成一个匿名内部类的对象
+ *
+ *
  */
 @SuppressWarnings("serial")
 abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPointcut implements Serializable {
 
+	/*
+	抽象类的构造器
+	抽象类中的构造器方法会在子类实例化的时候调用
+	 */
 	protected TransactionAttributeSourcePointcut() {
 		setClassFilter(new TransactionAttributeSourceClassFilter());
 	}
@@ -43,6 +51,7 @@ abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPoi
 
 	@Override
 	public boolean matches(Method method, Class<?> targetClass) {
+		//aop匹配连接点
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 	}
@@ -82,14 +91,16 @@ abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPoi
 	 * for filtering classes whose methods are not worth searching to begin with.
 	 */
 	private class TransactionAttributeSourceClassFilter implements ClassFilter {
-
+		//判断当前bean是否是pointcut的一个join point（切面关注点）
 		@Override
 		public boolean matches(Class<?> clazz) {
+			//三种基础类型直接返回false
 			if (TransactionalProxy.class.isAssignableFrom(clazz) ||
 					TransactionManager.class.isAssignableFrom(clazz) ||
 					PersistenceExceptionTranslator.class.isAssignableFrom(clazz)) {
 				return false;
 			}
+			//由source来解析 判断，source来自依赖注入
 			TransactionAttributeSource tas = getTransactionAttributeSource();
 			return (tas == null || tas.isCandidateClass(clazz));
 		}

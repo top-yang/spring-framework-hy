@@ -73,6 +73,7 @@ import org.springframework.util.Assert;
  */
 public abstract class TransactionSynchronizationManager {
 
+	//事务资源
 	private static final ThreadLocal<Map<Object, Object>> resources =
 			new NamedThreadLocal<>("Transactional resources");
 
@@ -140,7 +141,7 @@ public abstract class TransactionSynchronizationManager {
 	 */
 	@Nullable
 	private static Object doGetResource(Object actualKey) {
-		Map<Object, Object> map = resources.get();
+		Map<Object, Object> map = resources.get();//每个线程维护一个map
 		if (map == null) {
 			return null;
 		}
@@ -220,7 +221,7 @@ public abstract class TransactionSynchronizationManager {
 		if (map == null) {
 			return null;
 		}
-		Object value = map.remove(actualKey);
+		Object value = map.remove(actualKey);//删除connection
 		// Remove entire ThreadLocal if empty...
 		if (map.isEmpty()) {
 			resources.remove();

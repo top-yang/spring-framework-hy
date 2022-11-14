@@ -37,9 +37,11 @@ public class BeanFactoryTransactionAttributeSourceAdvisor extends AbstractBeanFa
 	@Nullable
 	private TransactionAttributeSource transactionAttributeSource;
 
+	//pointcut表面是匿名内部类,实际是TransactionAttributeSourcePointcut实例
+	// new一个抽象类，new出来的对象时当前类的一个匿名内部类，匿名类其实就是声明了一个新的类来继承抽象类，所以必须在匿名类实现所有抽象方法。
 	private final TransactionAttributeSourcePointcut pointcut = new TransactionAttributeSourcePointcut() {
 		@Override
-		@Nullable
+		@Nullable//实现了父类的方法，在子类做了扩展
 		protected TransactionAttributeSource getTransactionAttributeSource() {
 			return transactionAttributeSource;
 		}
@@ -64,6 +66,10 @@ public class BeanFactoryTransactionAttributeSourceAdvisor extends AbstractBeanFa
 		this.pointcut.setClassFilter(classFilter);
 	}
 
+	/**
+	 * pointcut初始化  aop匹配@Transactional时在此处获得的切点 传出的pc是个advisor对象
+	 * @return
+	 */
 	@Override
 	public Pointcut getPointcut() {
 		return this.pointcut;
