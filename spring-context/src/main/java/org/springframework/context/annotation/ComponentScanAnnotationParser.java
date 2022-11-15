@@ -116,7 +116,7 @@ class ComponentScanAnnotationParser {
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}
 		if (basePackages.isEmpty()) {
-			basePackages.add(ClassUtils.getPackageName(declaringClass));
+			basePackages.add(ClassUtils.getPackageName(declaringClass));//包名未配置时扫描@ComponentScan所注解的类所在包下的文件
 		}
 
 		scanner.addExcludeFilter(new AbstractTypeHierarchyTraversingFilter(false, false) {
@@ -125,6 +125,7 @@ class ComponentScanAnnotationParser {
 				return declaringClass.equals(className);
 			}
 		});
+		//完成bd的注册
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 

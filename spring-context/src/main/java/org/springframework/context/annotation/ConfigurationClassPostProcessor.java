@@ -119,6 +119,10 @@ import org.springframework.util.CollectionUtils;
  * @author Phillip Webb
  * @author Sam Brannen
  * @since 3.0
+ *
+ * Springboot主要使用该后处理器解析配置类的BeanDefinition，完成自动配置
+ *
+ *
  */
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
 		BeanRegistrationAotProcessor, BeanFactoryInitializationAotProcessor, PriorityOrdered,
@@ -298,6 +302,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		if (!this.registriesPostProcessed.contains(factoryId)) {
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
 			// Simply call processConfigurationClasses lazily at this point then.
+			//解析配置类的bd
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
@@ -342,7 +347,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		String[] candidateNames = registry.getBeanDefinitionNames();
-
+		//遍历bd
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
@@ -351,6 +356,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				}
 			}
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
+				//检查当前bean是否是配置类
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
 		}
