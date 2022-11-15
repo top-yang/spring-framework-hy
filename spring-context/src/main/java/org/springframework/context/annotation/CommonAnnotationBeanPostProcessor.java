@@ -469,6 +469,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	/**
 	 * Obtain a resource object for the given name and type through autowiring
+	 * 获取@autowire注入的对象
 	 * based on the given factory.
 	 * @param factory the factory to autowire against
 	 * @param element the descriptor for the annotated field/method
@@ -484,6 +485,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		String name = element.name;
 
 		if (factory instanceof AutowireCapableBeanFactory autowireCapableBeanFactory) {
+			//获取描述并解析
 			DependencyDescriptor descriptor = element.getDependencyDescriptor();
 			if (this.fallbackToDefaultTypeMatch && element.isDefaultName && !factory.containsBean(name)) {
 				autowiredBeanNames = new LinkedHashSet<>();
