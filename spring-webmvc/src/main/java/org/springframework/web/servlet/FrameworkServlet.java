@@ -527,6 +527,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+			//初始化Web环境中的SpringIOC容器 WebApplicationContext
 			this.webApplicationContext = initWebApplicationContext();
 			initFrameworkServlet();
 		}
@@ -998,7 +999,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
 
 		initContextHolders(request, localeContext, requestAttributes);
-
+		//模板方法设计模式，留给子类实现
 		try {
 			doService(request, response);
 		}

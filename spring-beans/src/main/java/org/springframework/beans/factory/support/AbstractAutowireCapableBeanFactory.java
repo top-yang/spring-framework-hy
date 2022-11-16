@@ -1796,11 +1796,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
-			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);//实现了BeanPostProcessor实例的postProcessBeforeInitialization()方法,包含一个特例@PostConstruct
+			//SpringMVC的拦截器在此注册
+			//实现了BeanPostProcessor实例的postProcessBeforeInitialization()方法,包含一个特例@PostConstruct
+			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
 			//init-method方法
+			//SpringMVC的HandlerMapping在此初始化
 			invokeInitMethods(beanName, wrappedBean, mbd);//初始化通知
 		}
 		catch (Throwable ex) {
@@ -1808,7 +1811,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					(mbd != null ? mbd.getResourceDescription() : null), beanName, ex.getMessage(), ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
-			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);//实现了BeanPostProcessor 实例的 postProcessAfterInitialization() 方法。
+			//实现了BeanPostProcessor 实例的 postProcessAfterInitialization() 方法。
+			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
 		return wrappedBean;

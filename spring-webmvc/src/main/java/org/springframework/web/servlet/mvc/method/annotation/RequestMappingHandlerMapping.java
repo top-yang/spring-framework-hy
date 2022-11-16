@@ -221,7 +221,7 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 			this.config.setRegisteredSuffixPatternMatch(useRegisteredSuffixPatternMatch());
 			this.config.setPathMatcher(getPathMatcher());
 		}
-
+		// 调用父类AbstractHandlerMethodMapping的afterPropertiesSet方法
 		super.afterPropertiesSet();
 	}
 
